@@ -1,8 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
+from models import DisciplineModelRaw, DisciplineVariantModel, DisciplineModel
 
 # URL of the webpage you want to scrape
-url = "https://fmi-plovdiv.org/"
+url = "https://fmi-plovdiv.org/index.jsp?id=4792&ln=1"
 
 # Send a GET request to the webpage
 response = requests.get(url)
@@ -11,8 +12,57 @@ response = requests.get(url)
 soup = BeautifulSoup(response.content, 'html.parser')
 
 # Find the elements you want to extract (example: all paragraph texts)
-paragraphs = soup.find_all('p')
+paragraphs = soup.find_all('table.edu_gratbl')
 
-# Print the text content of each paragraph
-for paragraph in paragraphs:
-    print(paragraph.get_text())
+# Find the table with class "edu_gratbl"
+table = soup.find('table', class_='edu_gratbl')
+
+if table:
+    # Extract rows from the table
+    disciplinesRaw = []
+    for row in table.find_all('tr')[1:]:  # Skip the header row
+        cells = row.find_all('td')
+        time = cells[0].get_text()
+        discipline = cells[1].get_text()
+        #for no put discipline as lecturer
+        lecturer = cells[1].get_text()
+        type = cells[2].get_text()
+        cabinetNumber = cells[3].get_text()
+        
+        discipline = DisciplineModelRaw(time, discipline, lecturer, type, cabinetNumber)
+        disciplinesRaw.append(discipline)
+    
+    disciplinesRaw = [d for d in disciplinesRaw if d.discipline]
+
+    # Create a dictionary to hold unique disciplines as keys and list of records as values 
+    discipline_map = {} 
+    for disciplineRaw in disciplinesRaw: 
+        if disciplineRaw.discipline not in discipline_map: 
+            discipline_map[disciplineRaw.discipline] = [] 
+        discipline_map[disciplineRaw.discipline].append(disciplineRaw)
+
+    # Create the populated DisciplineModel instances
+    discipline_models = []
+    discipline_id_counter = 1  # Initialize a counter for unique discipline IDs
+    for discipline_name, records in discipline_map.items():
+        discipline_variants = []
+        for record in records:
+            variant = DisciplineVariantModel(
+                disciplineId=discipline_id_counter,
+                lecturer=record.lecturer,
+                time=record.time,
+                type=record.type,
+                cabinetNumber=record.cabinetNumber
+            )
+            discipline_variants.append(variant)
+            discipline_id_counter += 1
+        discipline_model = DisciplineModel(disciplineName=discipline_name, disciplineList=discipline_variants)
+        discipline_models.append(discipline_model)
+
+    # Print the populated models
+    for model in discipline_models:
+        print(f"Discipline Name: {model.disciplineName}")
+        for variant in model.disciplineList:
+            print(f"  ID: {variant.disciplineId}, Time: {variant.time}, Lecturer: {variant.lecturer}, Type: {variant.type}, Cabinet: {variant.cabinetNumber}")
+else:
+    print("Table with class 'foo' not found.")
