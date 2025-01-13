@@ -1,7 +1,7 @@
 import logging
 from flask import Flask, request, jsonify
 from datetime import datetime
-from fmi_scraper import scrape_disciplines
+import fmi_discipline_scraper
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -11,10 +11,22 @@ app = Flask(__name__)
 def load_disciplines():
     """Load and scrape disciplines from the website."""
     url = "https://fmi-plovdiv.org/index.jsp?id=4792&ln=1"
-    return scrape_disciplines(url)
+    return fmi_discipline_scraper.scrape_disciplines(url)
 
 # Global data store
 disciplines_data = load_disciplines()
+
+@app.route('/api/help', methods=['GET'])
+def help_info():
+    """Endpoint that returns the content of the help_info.txt file."""
+    try:
+        # Open and read the content of help_info.txt
+        with open('help_info.txt', 'r', encoding='utf-8') as file:
+            help_content = file.read()
+        return jsonify({"help_info": help_content})
+    except Exception as e:
+        logging.error(f"Error reading help_info.txt: {e}")
+        return error_response("Failed to retrieve help information.", 500)
 
 @app.route('/api/chatbot', methods=['POST'])
 def chatbot():
