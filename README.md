@@ -9,7 +9,13 @@ By using a scraper and feeding the data into a chat model.
 
 Everything should be written in Python!
 
-# Chat interraction model
+# How to run the project
+python3 -m venv fmi-scraper-virtual-env
+source fmi-scraper-virtual-env/bin/activate
+pip3 install requests beautifulsoup4
+python3 main.py
+
+# Chat interaction model
 ##  Phase 1
 A: Please type help, if you'd like to know anything.
 Q: Help
@@ -18,7 +24,7 @@ Q: Give the all specializations for the master degree program in FMI
 A: {{All the specializations from the FMI website}}
 Q: Give me info about {{specialization name}}
 A: {{Available years of education}}
-Q: {{Sepcific year + specific course}}
+Q: {{Specific year + specific course}}
 A: Available seasons {{list of seasons - winter / summer}}. Pick either.
 Q: {{Season}}
 A: {{List of all disciplines}}. Which one do you want to know more about?
@@ -48,7 +54,7 @@ Angular application
 - cabinetNumber: string
 
 # MVP of this project
-## Chat interraction model
+## Chat interaction model
 A: Please type help, if you'd like to know anything.
 Q: Help
 A: List of all root commands
@@ -58,7 +64,7 @@ Q: {{A specific discipline}}
 A: List of {{The dates | the room | the lecturer | the type (lecture / exercises)}}
 
 ## Chat user interface
-For the MVP we are going to interract with the chat via the terminal
+For the MVP we are going to interact with the chat via the terminal
 
 ## Business models
 ### ChatModel
