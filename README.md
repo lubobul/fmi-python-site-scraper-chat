@@ -76,3 +76,29 @@ For the MVP we are going to interact with the chat via the terminal
 - time: string
 - type: disciplineType
 - cabinetNumber: string
+
+
+# Chatbot
+The **controller.py** serves as the core of the Chatbot. It handles user queries by matching them to a predefined set of questions. The Chatbot uses the scraped data to generate human-readable responses to the HTTP requests from the client.
+
+# How to run the Chatbot
+```
+python controller.py
+```
+# Postman
+POST http://127.0.0.1:5000/api/chatbot
+
+Request body:
+```
+{
+    "question": "Кога ми е следващият час?"
+}
+```
+Response body:
+```
+{
+    "message": "Следващият час е на: 18.01.2025 по дисциплината Избираема дисциплина 1 в кабинет 547 к.з."
+}
+```
+## Information command
+GET http://127.0.0.1:5000/api/help
