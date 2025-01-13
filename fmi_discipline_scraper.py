@@ -48,15 +48,15 @@ def scrape_disciplines(url: str) -> List[DisciplineModel]:
             discipline_variants = []
             for record in records:
                 variant = DisciplineVariantModel(
-                    disciplineId=discipline_id_counter,
+                    discipline_id=discipline_id_counter,
                     lecturer=record.lecturer,
                     time=record.time,
-                    type=record.type,
-                    cabinetNumber=record.cabinetNumber
+                    discipline_type=record.type,
+                    cabinet_number=record.cabinetNumber
                 )
                 discipline_variants.append(variant)
                 discipline_id_counter += 1
-            discipline_model = DisciplineModel(disciplineName=discipline_name, disciplineList=discipline_variants)
+            discipline_model = DisciplineModel(discipline_name=discipline_name, discipline_list=discipline_variants)
             discipline_models.append(discipline_model)
 
         return discipline_models
