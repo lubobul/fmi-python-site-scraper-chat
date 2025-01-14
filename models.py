@@ -22,12 +22,13 @@ class DisciplineModelRaw:
         self.type = type
         self.cabinetNumber = cabinet_number
 
-class DegreeLinkModel:
-    def __init__(self, link_title: str, link: str):
+class ProgramLinkModel:
+    def __init__(self, link_title: str, summer_link: str = None, winter_link: str= None):
         self.link_title = link_title
-        self.link = link
+        self.summer_link = summer_link
+        self.winter_link = winter_link
 
-class DegreeModel:
-    def __init__(self, degree_name: str, links: List[DegreeLinkModel]):
+class ProgramModel:
+    def __init__(self, degree_name: str, links: List[ProgramLinkModel]):
         self.degree_name = degree_name
         self.links = links
