@@ -27,6 +27,8 @@ class CourseLinkModel:
         self.link_title = link_title
         self.summer_link = summer_link
         self.winter_link = winter_link
+    def to_dict(self):
+        return { "link_title": self.link_title, "summer_link": self.summer_link, "winter_link": self.winter_link }
 
 class ProgramModel:
     def __init__(self, program_name: str, courses: List[CourseLinkModel]):

@@ -32,6 +32,10 @@ def help_info():
         logging.error(f"Error reading help_info.txt: {e}")
         return error_response("Failed to retrieve help information.", 500)
 
+#endpoint, post, to load the disciplines for a particular url
+#/api/load/disciplines
+#body {link_to_disciplines: "href_link"}
+
 @disciplines_controller_bp.route('/api/chatbot/disciplines', methods=['POST'])
 def chatbot():
     """Main endpoint for handling chatbot questions."""

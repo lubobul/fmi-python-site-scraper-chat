@@ -10,6 +10,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 app = Flask(__name__)
 
+url = "https://fmi-plovdiv.org/index.jsp?ln=1&id=1384"
+programs = scrape_degrees(url)
+
 @programs_controller_bp.route('/api/chatbot/programs', methods=['POST'])
 def chatbot():
     """Main endpoint for handling chatbot questions."""
@@ -22,6 +25,7 @@ def chatbot():
     # Define question handlers
     handlers = {
         "какви програми имам?": handle_programs,
+        "какви курсове имам за": handle_courses,
     }
 
     # Match question to handler
@@ -32,11 +36,26 @@ def chatbot():
     return error_response("Unsupported question.", 400)
 
 def handle_programs(question):
-    url = "https://fmi-plovdiv.org/index.jsp?ln=1&id=1384"
-    programs = scrape_degrees(url)
     program_names = [program.program_name for program in programs]
     return jsonify({"programs": program_names})
 
+# Fix this
+# raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
+# TypeError: Object of type CourseLinkModel is not JSON serializable
+def handle_courses(question):
+    """Handle 'какви курсове имам за' question."""
+    program_name = question.replace("какви курсове имам за", "").strip(" '?")
+
+    courses = get_courses_by_name(program_name)
+    courses_dict = [course.to_dict() for course in courses]
+    return jsonify({"courses": courses_dict})
+
+
+def get_courses_by_name(program_name):
+    for program in programs:
+        if program_name.lower() in program.program_name.lower():
+            return program.courses
+        return []
 def error_response(message, status_code):
     """Generate a standardized error response."""
     return jsonify({"error": message}), status_code
