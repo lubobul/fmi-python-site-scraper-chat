@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from models.models import ProgramModel, ProgramLinkModel
+from models.models import ProgramModel, CourseLinkModel
 from typing import List
 
 def scrape_degrees(url: str) -> List[ProgramModel]:
@@ -23,16 +23,16 @@ def scrape_degrees(url: str) -> List[ProgramModel]:
                 programs.append(program)
 
                 if cells[1].find('a') or cells[2].find('a'):
-                    program_link = ProgramLinkModel(degree_name)
+                    program_link = CourseLinkModel(degree_name)
                     program_link.winter_link = cells[1].find('a').get('href') if cells[1].find('a') else None
                     program_link.summer_link = cells[2].find('a').get('href') if cells[2].find('a') else None
-                    program.links.append(program_link)
+                    program.courses.append(program_link)
             else:
                 link_name = cells[0].get_text().strip()
-                program_link = ProgramLinkModel(link_name)
+                program_link = CourseLinkModel(link_name)
                 program_link.winter_link = cells[1].find('a').get('href') if cells[1].find('a') else None
                 program_link.summer_link = cells[2].find('a').get('href') if cells[2].find('a') else None
-                program.links.append(program_link)
+                program.courses.append(program_link)
     return programs
 
 

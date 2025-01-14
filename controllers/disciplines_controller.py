@@ -1,8 +1,11 @@
 import logging
-from flask import Flask, request, jsonify
+from flask import Blueprint, Flask, request, jsonify
 from datetime import datetime
-from scrapers.fmi_degrees_scraper import scrape_degrees
+from controllers.util.controller_utils import parse_request
 from scrapers import fmi_discipline_scraper
+
+disciplines_controller_bp = Blueprint('disciplines_controller_bp', __name__)
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -17,7 +20,7 @@ def load_disciplines():
 # Global data store
 disciplines_data = load_disciplines()
 
-@app.route('/api/help', methods=['GET'])
+@disciplines_controller_bp.route('/api/help', methods=['GET'])
 def help_info():
     """Endpoint that returns the content of the help_info.txt file."""
     try:
@@ -29,7 +32,7 @@ def help_info():
         logging.error(f"Error reading help_info.txt: {e}")
         return error_response("Failed to retrieve help information.", 500)
 
-@app.route('/api/chatbot', methods=['POST'])
+@disciplines_controller_bp.route('/api/chatbot/disciplines', methods=['POST'])
 def chatbot():
     """Main endpoint for handling chatbot questions."""
     question_data = parse_request(request)
@@ -40,7 +43,6 @@ def chatbot():
 
     # Define question handlers
     handlers = {
-        "какви програми имам?": handle_programs,
         "какви дисциплини имам?": handle_disciplines_list,
         "кой преподава дисциплината": handle_discipline_lecturers,
         "по кои дисциплини преподава": handle_lecturer_disciplines,
@@ -59,22 +61,10 @@ def chatbot():
     return error_response("Unsupported question.", 400)
 
 # Helper functions
-def parse_request(req):
-    """Parse and validate the incoming request."""
-    try:
-        data = req.get_json(force=True)
-        return data.get('question', '').strip()
-    except Exception:
-        return None
 
 def error_response(message, status_code):
     """Generate a standardized error response."""
     return jsonify({"error": message}), status_code
-def handle_programs(question):
-    url = "https://fmi-plovdiv.org/index.jsp?ln=1&id=1384"
-    programs = scrape_degrees(url)
-    program_names = [program.program_name for program in programs]
-    return jsonify({"programs": program_names})
 
 def handle_disciplines_list(question):
     """Handle 'какви дисциплини имам?' question."""
@@ -212,6 +202,3 @@ def get_next_session():
                 logging.error(f"Invalid date format: {variant.time}")
                 continue
     return next_session
-
-if __name__ == "__main__":
-    app.run(debug=True)

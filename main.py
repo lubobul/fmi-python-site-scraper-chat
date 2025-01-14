@@ -7,7 +7,7 @@ def main():
     programs = scrape_degrees(url)
     for program in programs:
         print(f"Degree Name: {program.program_name}")
-        for link in program.links:
+        for link in program.courses:
             print(f" Link Title: {link.link_title}")
             print(f" Winter Link: {link.winter_link}")
             print(f" Summer Link: {link.summer_link}")
