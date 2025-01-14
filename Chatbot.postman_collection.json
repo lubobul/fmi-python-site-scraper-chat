@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "3722ec81-7ecc-458c-9650-80322dc7c5f4",
-		"name": "ChatBot",
+		"_postman_id": "93135fba-173d-47d1-a8cb-b74807ba1531",
+		"name": "Chatbot",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "39830018"
 	},
@@ -199,7 +199,7 @@
 		{
 			"name": "Info",
 			"request": {
-				"method": "POST",
+				"method": "GET",
 				"header": [
 					{
 						"key": "Content-Type",
@@ -208,7 +208,7 @@
 					}
 				],
 				"url": {
-					"raw": "http://127.0.0.1:5000/api//help",
+					"raw": "http://127.0.0.1:5000/api/help",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -219,8 +219,106 @@
 					"port": "5000",
 					"path": [
 						"api",
-						"",
 						"help"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "всички програми",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"question\": \"какви програми имам?\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/chatbot/programs",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"chatbot",
+						"programs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "какви курсове имам за 1",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"question\": \"какви курсове имам за 1. СОФТУЕРНИ ТЕХНОЛОГИИ СЪС СПЕЦИАЛИЗАЦИЯ СОФТУЕРНИ АРХИТЕКТУРИ И СРЕДСТВА?\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/chatbot/programs",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"chatbot",
+						"programs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "какви курсове имам за 1 Copy",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"question\": \"какви курсове имам за 1. СОФТУЕРНИ ТЕХНОЛОГИИ СЪС СПЕЦИАЛИЗАЦИЯ СОФТУЕРНИ АРХИТЕКТУРИ И СРЕДСТВА?\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/chatbot/programs",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"chatbot",
+						"programs"
 					]
 				}
 			},

@@ -3,6 +3,8 @@ from flask import Blueprint, Flask, request, jsonify
 from datetime import datetime
 from controllers.util.controller_utils import parse_request
 from scrapers import fmi_discipline_scraper
+import os
+import logging
 
 disciplines_controller_bp = Blueprint('disciplines_controller_bp', __name__)
 
@@ -12,29 +14,55 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 app = Flask(__name__)
 
-def load_disciplines():
-    """Load and scrape disciplines from the website."""
-    url = "https://fmi-plovdiv.org/index.jsp?id=4792&ln=1"
+@disciplines_controller_bp.route('/api/load/disciplines', methods=['POST'])
+def load_disciplines_request():
+    """
+    Load disciplines from a URL provided in the request body.
+    Expects JSON body: { "link_to_disciplines": "href_link" }
+    """
+    global disciplines_data  # Use the global variable to store loaded disciplines
+
+    # Parse the JSON body
+    data = request.get_json()
+    if not data or "link_to_disciplines" not in data:
+        return jsonify({"error": "Missing 'link_to_disciplines' in request body"}), 400
+
+    url = data["link_to_disciplines"]
+    
+    # Update the global disciplines_data
+    try:
+        disciplines_data = load_disciplines(url)
+        return jsonify({"message": "Disciplines loaded successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def load_disciplines(url):
+    """Load and scrape disciplines from the given website URL."""
     return fmi_discipline_scraper.scrape_disciplines(url)
 
-# Global data store
-disciplines_data = load_disciplines()
+# Initialize the global data store
+disciplines_data = None
 
 @disciplines_controller_bp.route('/api/help', methods=['GET'])
 def help_info():
     """Endpoint that returns the content of the help_info.txt file."""
     try:
+        # Determine the absolute path to help_info.txt
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(current_dir, '..', 'help_info.txt')
+
         # Open and read the content of help_info.txt
-        with open('help_info.txt', 'r', encoding='utf-8') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             help_content = file.read()
+
         return jsonify({"help_info": help_content})
+    except FileNotFoundError:
+        logging.error("help_info.txt file not found.")
+        return jsonify({"error": "Help information file not found."}), 404
     except Exception as e:
         logging.error(f"Error reading help_info.txt: {e}")
-        return error_response("Failed to retrieve help information.", 500)
+        return jsonify({"error": "Failed to retrieve help information."}), 500
 
-#endpoint, post, to load the disciplines for a particular url
-#/api/load/disciplines
-#body {link_to_disciplines: "href_link"}
 
 @disciplines_controller_bp.route('/api/chatbot/disciplines', methods=['POST'])
 def chatbot():
