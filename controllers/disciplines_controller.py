@@ -71,6 +71,9 @@ def chatbot():
     if not question_data:
         return error_response("Invalid request. Please provide a 'question' field.", 400)
 
+    if not disciplines_data:
+        return error_response("За да продължите с тези въпроси, първо изберете програма, като попитате - какви програми имам?", 400)
+
     question = question_data.lower()
 
     # Define question handlers

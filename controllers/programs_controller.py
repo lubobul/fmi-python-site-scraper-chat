@@ -13,7 +13,7 @@ app = Flask(__name__)
 url = "https://fmi-plovdiv.org/index.jsp?ln=1&id=1384"
 programs = scrape_degrees(url)
 
-@programs_controller_bp.route('/api/chatbot/programs', methods=['POST'])
+@programs_controller_bp.route('/api/chatbot', methods=['POST'])
 def chatbot():
     """Main endpoint for handling chatbot questions."""
     question_data = parse_request(request)
@@ -37,7 +37,12 @@ def chatbot():
 
 def handle_programs(question):
     program_names = [program.program_name for program in programs]
-    return jsonify({"programs": program_names})
+    return jsonify(
+        {
+            "message": "Вашите прoграми са",
+            "items": program_names
+        }
+    )
 
 # Fix this
 # raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
@@ -47,8 +52,14 @@ def handle_courses(question):
     program_name = question.replace("какви курсове имам за", "").strip(" '?")
 
     courses = get_courses_by_name(program_name)
-    courses_dict = [course.to_dict() for course in courses]
-    return jsonify({"courses": courses_dict})
+    course_title = [course.link_title for course in courses]
+
+    return jsonify(
+        {
+            "message": "Вашите прoграми са:",
+            "items": course_title
+        }
+    )
 
 
 def get_courses_by_name(program_name):
