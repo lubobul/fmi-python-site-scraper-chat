@@ -1,5 +1,5 @@
-from fmi_discipline_scraper import scrape_disciplines
-from fmi_degrees_scraper import scrape_degrees
+from scrapers.fmi_discipline_scraper import scrape_disciplines
+from scrapers.fmi_degrees_scraper import scrape_degrees
 
 def main():
 

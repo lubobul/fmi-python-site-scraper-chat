@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from models import DisciplineModelRaw, DisciplineVariantModel, DisciplineModel
+from models.models import DisciplineModelRaw, DisciplineVariantModel, DisciplineModel
 from typing import List
 
 def scrape_disciplines(url: str) -> List[DisciplineModel]:

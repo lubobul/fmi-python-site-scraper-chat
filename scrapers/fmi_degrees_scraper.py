@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from models import ProgramModel, ProgramLinkModel
+from models.models import ProgramModel, ProgramLinkModel
 from typing import List
 
 def scrape_degrees(url: str) -> List[ProgramModel]:
