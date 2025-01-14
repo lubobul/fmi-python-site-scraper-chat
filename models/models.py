@@ -29,6 +29,6 @@ class ProgramLinkModel:
         self.winter_link = winter_link
 
 class ProgramModel:
-    def __init__(self, degree_name: str, links: List[ProgramLinkModel]):
-        self.degree_name = degree_name
+    def __init__(self, program_name: str, links: List[ProgramLinkModel]):
+        self.program_name = program_name
         self.links = links

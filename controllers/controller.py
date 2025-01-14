@@ -1,6 +1,7 @@
 import logging
 from flask import Flask, request, jsonify
 from datetime import datetime
+from scrapers.fmi_degrees_scraper import scrape_degrees
 from scrapers import fmi_discipline_scraper
 
 # Configure logging
@@ -39,6 +40,7 @@ def chatbot():
 
     # Define question handlers
     handlers = {
+        "какви програми имам?": handle_programs,
         "какви дисциплини имам?": handle_disciplines_list,
         "кой преподава дисциплината": handle_discipline_lecturers,
         "по кои дисциплини преподава": handle_lecturer_disciplines,
@@ -68,12 +70,16 @@ def parse_request(req):
 def error_response(message, status_code):
     """Generate a standardized error response."""
     return jsonify({"error": message}), status_code
+def handle_programs(question):
+    url = "https://fmi-plovdiv.org/index.jsp?ln=1&id=1384"
+    programs = scrape_degrees(url)
+    program_names = [program.program_name for program in programs]
+    return jsonify({"programs": program_names})
 
 def handle_disciplines_list(question):
     """Handle 'какви дисциплини имам?' question."""
     discipline_names = [discipline.disciplineName for discipline in disciplines_data]
-    readable_list = ", ".join(discipline_names)
-    return jsonify({"message": f"Ти имаш следните дисциплини: {readable_list}"})
+    return jsonify({"disciplines": discipline_names})
 
 def handle_discipline_lecturers(question):
     """Handle 'кой преподава дисциплината' question."""

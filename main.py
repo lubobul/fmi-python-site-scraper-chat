@@ -6,7 +6,7 @@ def main():
     url = "https://fmi-plovdiv.org/index.jsp?ln=1&id=1384"
     programs = scrape_degrees(url)
     for program in programs:
-        print(f"Degree Name: {program.degree_name}")
+        print(f"Degree Name: {program.program_name}")
         for link in program.links:
             print(f" Link Title: {link.link_title}")
             print(f" Winter Link: {link.winter_link}")
