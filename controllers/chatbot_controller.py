@@ -1,49 +1,38 @@
 import logging
+from typing import List
+
 from flask import Blueprint, Flask, request, jsonify
 from datetime import datetime
 from controllers.util.controller_utils import parse_request
+from models.models import ProgramLinkModel
+from scrapers.fmi_specialization_scraper import scrape_specializations
 from scrapers import fmi_discipline_scraper
 import os
 import logging
 
-disciplines_controller_bp = Blueprint('disciplines_controller_bp', __name__)
+url = "https://fmi-plovdiv.org/index.jsp?ln=1&id=1384"
+specializations = scrape_specializations(url)
 
+chatbot_controller_bp = Blueprint('chatbot_controller_bp', __name__)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
 
-@disciplines_controller_bp.route('/api/load/disciplines', methods=['POST'])
-def load_disciplines_request():
-    """
-    Load disciplines from a URL provided in the request body.
-    Expects JSON body: { "link_to_disciplines": "href_link" }
-    """
-    global disciplines_data  # Use the global variable to store loaded disciplines
+selected_specialization_name = None
 
-    # Parse the JSON body
-    data = request.get_json()
-    if not data or "link_to_disciplines" not in data:
-        return jsonify({"error": "Missing 'link_to_disciplines' in request body"}), 400
-
-    url = data["link_to_disciplines"]
-    
-    # Update the global disciplines_data
-    try:
-        disciplines_data = load_disciplines(url)
-        return jsonify({"message": "Disciplines loaded successfully"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 def load_disciplines(url):
     """Load and scrape disciplines from the given website URL."""
     return fmi_discipline_scraper.scrape_disciplines(url)
 
+
 # Initialize the global data store
 disciplines_data = None
 
-@disciplines_controller_bp.route('/api/help', methods=['GET'])
+
+@chatbot_controller_bp.route('/api/help', methods=['GET'])
 def help_info():
     """Endpoint that returns the content of the help_info.txt file."""
     try:
@@ -64,21 +53,23 @@ def help_info():
         return jsonify({"error": "Failed to retrieve help information."}), 500
 
 
-@disciplines_controller_bp.route('/api/chatbot/disciplines', methods=['POST'])
+@chatbot_controller_bp.route('/api/chatbot', methods=['POST'])
 def chatbot():
     """Main endpoint for handling chatbot questions."""
     question_data = parse_request(request)
     if not question_data:
         return error_response("Invalid request. Please provide a 'question' field.", 400)
 
-    if not disciplines_data:
-        return error_response("За да продължите с тези въпроси, първо изберете програма, като попитате - какви програми имам?", 400)
+    # if not disciplines_data:
+    #     return error_response("За да продължите с тези въпроси, първо изберете програма, като попитате - какви програми имам?", 400)
 
     question = question_data.lower()
 
     # Define question handlers
     handlers = {
-        "какви дисциплини имам?": handle_disciplines_list,
+        "какви специалности има?": handle_specializations,
+        "какви програми имам за специалност": handle_programs_for_specialization,
+        "какви дисциплини имам за програма": handle_disciplines_list,
         "кой преподава дисциплината": handle_discipline_lecturers,
         "по кои дисциплини преподава": handle_lecturer_disciplines,
         "следващият час": handle_next_session,
@@ -95,16 +86,31 @@ def chatbot():
 
     return error_response("Unsupported question.", 400)
 
+
 # Helper functions
 
 def error_response(message, status_code):
     """Generate a standardized error response."""
     return jsonify({"error": message}), status_code
 
+
 def handle_disciplines_list(question):
     """Handle 'какви дисциплини имам?' question."""
+    global disciplines_data
+    program_name = question.replace("какви дисциплини имам за програма", "").strip(" '?")
+    program_name = program_name.capitalize()  # Capitalize the first letter of the discipline name
+
+    selected_programs_for_specialization = get_programs_for_specialization_by_name(selected_specialization_name)
+    program_link = get_program_link_by_program_name(program_name, selected_programs_for_specialization)
+
+    program_url = "https://fmi-plovdiv.org/" + program_link.replace("../", "");
+    disciplines_data = load_disciplines(program_url)
     discipline_names = [discipline.disciplineName for discipline in disciplines_data]
-    return jsonify({"disciplines": discipline_names})
+    return jsonify({
+        "message": "Дисциплините, които имаше са:",
+        "items": discipline_names
+    })
+
 
 def handle_discipline_lecturers(question):
     """Handle 'кой преподава дисциплината' question."""
@@ -118,7 +124,12 @@ def handle_discipline_lecturers(question):
         return error_response(f"Дисциплината '{discipline_name}' няма преподаватели или не беше намерена.", 404)
 
     readable_list = ", ".join(lecturers)
-    return jsonify({"message": f"По '{discipline_name}' преподават: {readable_list}"})
+    return jsonify(
+        {
+            "message": f"По '{discipline_name}' преподават:",
+            "items": lecturers
+        })
+
 
 def handle_lecturer_disciplines(question):
     """Handle 'по кои дисциплини преподава' question."""
@@ -127,10 +138,13 @@ def handle_lecturer_disciplines(question):
 
     matching_disciplines = get_disciplines_by_lecturer(lecturer_name)
     if matching_disciplines:
-        readable_list = ", ".join(matching_disciplines)
-        return jsonify({"message": f"Преподавателя води следните дисциплини: {readable_list}"})
-    
+        return jsonify({
+            "message": f"Преподавателя води следните дисциплини:",
+            "items": matching_disciplines
+        })
+
     return error_response(f"Не бяха намерени дисциплини за преподавател '{lecturer_name}'.", 404)
+
 
 def handle_session_query(question):
     """Handle queries about specific session types (лекции, лабораторни, изпит, поправка)."""
@@ -142,7 +156,7 @@ def handle_session_query(question):
     sessions = get_sessions_for_discipline(discipline_name, session_type)
     if sessions:
         session_info = sessions[0]  # Assume we are interested in the first session for simplicity
-        
+
         # Check if the cabinet is empty and set to '457' if so
         cabinet = session_info.get('cabinet', '').strip()
         if not cabinet:
@@ -170,10 +184,55 @@ def handle_next_session(question):
         cabinet = next_session.get('cabinet', '').strip()
         if not cabinet:
             cabinet = '547 к.з.'  # Replace with the default cabinet value
-        
+
         return jsonify({"message": f"Следващият час е на: {next_session['time']} по дисциплината {next_session['discipline']} в кабинет {cabinet}"})
     return error_response("Не бяха намерени предстоящи часове.", 404)
 
+
+def handle_specializations(question):
+    specialization_names = [specialization.specialization_name for specialization in specializations]
+    return jsonify(
+        {
+            "message": "Вашите специалности са:",
+            "items": specialization_names
+        }
+    )
+
+
+def handle_programs_for_specialization(question):
+    """Handle 'какви курсове имам за' question."""
+    global selected_specialization_name
+
+    specialization_name = question.replace("какви програми имам за специалност", "").strip(" '?")
+
+    selected_specialization_name = specialization_name
+
+    programs = get_programs_for_specialization_by_name(specialization_name)
+    program_titles = [program.program_name for program in programs]
+
+    return jsonify(
+        {
+            "message": "Вашите прoграми са:",
+            "items": program_titles
+        }
+    )
+
+
+def get_programs_for_specialization_by_name(specialization_name):
+    for specialization in specializations:
+        if specialization_name.lower() in specialization.specialization_name.lower():
+            return specialization.programs
+        return []
+
+
+def get_program_link_by_program_name(program_name, programs: List[ProgramLinkModel]):
+    for program in programs:
+        if program_name.lower() in program.program_name.lower():
+            if program.summer_link:
+                return program.summer_link
+            else:
+                return program.winter_link
+    return None
 
 
 def get_discipline_lecturers(discipline_name):
@@ -183,6 +242,7 @@ def get_discipline_lecturers(discipline_name):
         if discipline.disciplineName.lower() == discipline_name.lower():
             lecturers.extend(variant.lecturer for variant in discipline.disciplineList)
     return list(set(lecturers))
+
 
 def get_disciplines_by_lecturer(lecturer_name):
     """Retrieve disciplines taught by a specific lecturer."""
@@ -194,12 +254,14 @@ def get_disciplines_by_lecturer(lecturer_name):
                 matching_disciplines.add(discipline.disciplineName)
     return matching_disciplines
 
+
 def get_session_type(question):
     """Determine session type from the question."""
     for session_type in ["лекции", "лабораторни", "изпит", "поправка"]:
         if session_type in question:
             return session_type
     return None
+
 
 def get_sessions_for_discipline(discipline_name, session_type):
     """Retrieve sessions for a specific discipline and type."""
@@ -218,6 +280,7 @@ def get_sessions_for_discipline(discipline_name, session_type):
             )
     return sessions
 
+
 def get_next_session():
     """Find the next upcoming session."""
     now = datetime.now()
@@ -226,7 +289,8 @@ def get_next_session():
         for variant in discipline.disciplineList:
             try:
                 session_date = datetime.strptime(variant.time.split(",")[0].strip()[:10], "%d.%m.%Y")
-                if session_date > now and (not next_session or session_date < datetime.strptime(next_session['time'], "%d.%m.%Y")):
+                if session_date > now and (
+                        not next_session or session_date < datetime.strptime(next_session['time'], "%d.%m.%Y")):
                     next_session = {
                         "discipline": discipline.disciplineName,
                         "time": session_date.strftime("%d.%m.%Y"),
