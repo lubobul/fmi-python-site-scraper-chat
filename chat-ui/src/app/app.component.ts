@@ -63,12 +63,21 @@ export class AppComponent implements OnInit, AfterViewChecked {
                     } as ChatHistoryMessage);
                 },
                 error: (error) => {
-                    this.appendMessageToHistory({
-                        messageType: ChatHistoryMessageType.BotMessage,
-                        message: error.error.message,
-                        id: this.chatHistoryId++,
-                        isWarning: true,
-                    } as ChatHistoryMessage);
+                    if(error?.error?.message){
+                        this.appendMessageToHistory({
+                            messageType: ChatHistoryMessageType.BotMessage,
+                            message: error.error.message,
+                            id: this.chatHistoryId++,
+                            isWarning: true,
+                        } as ChatHistoryMessage);
+                    }else{
+                        this.appendMessageToHistory({
+                            messageType: ChatHistoryMessageType.BotMessage,
+                            message: "Има проблем във връзката със сървъра...",
+                            id: this.chatHistoryId++,
+                            isWarning: true,
+                        } as ChatHistoryMessage);
+                    }
                 },
             });
 
