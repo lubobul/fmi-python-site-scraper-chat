@@ -9,8 +9,8 @@
 .chat-container {
     display: flex;
     flex-flow: column;
-    min-width: 60rem;
-    max-width: 70rem;
+    min-width: 36rem; //make this 38 so it fits in the fmi main page
+    max-width: 38rem;
     height: 100vh;
 
     .chat-user-input {
