@@ -29,11 +29,11 @@ def load_disciplines(url):
 
 
 # Initialize the global data store
-disciplines_data = None
+disciplines_data = load_disciplines("https://fmi-plovdiv.org/index.jsp?id=4789&ln=1")
 
 
-@chatbot_controller_bp.route('/api/help', methods=['GET'])
-def help_info():
+# @chatbot_controller_bp.route('/api/help', methods=['GET'])
+def help_info(question):
     """Endpoint that returns the content of the help_info.txt file."""
     try:
         # Determine the absolute path to help_info.txt
@@ -44,13 +44,13 @@ def help_info():
         with open(file_path, 'r', encoding='utf-8') as file:
             help_content = file.read()
 
-        return jsonify({"help_info": help_content})
+        return jsonify({"message": help_content})
     except FileNotFoundError:
         logging.error("help_info.txt file not found.")
-        return jsonify({"error": "Help information file not found."}), 404
+        return jsonify({"message": "Help information file not found."}), 404
     except Exception as e:
         logging.error(f"Error reading help_info.txt: {e}")
-        return jsonify({"error": "Failed to retrieve help information."}), 500
+        return jsonify({"message": "Failed to retrieve help information."}), 500
 
 
 @chatbot_controller_bp.route('/api/chatbot', methods=['POST'])
@@ -73,6 +73,7 @@ def chatbot():
         "кой преподава дисциплината": handle_discipline_lecturers,
         "по кои дисциплини преподава": handle_lecturer_disciplines,
         "следващият час": handle_next_session,
+        "/помощ": help_info
     }
 
     # Match question to handler
@@ -84,14 +85,14 @@ def chatbot():
     if any(keyword in question for keyword in ["лекции", "лабораторни", "изпит", "поправка"]):
         return handle_session_query(question)
 
-    return error_response("Unsupported question.", 400)
+    return error_response("Не разбирам въпроса, за повече информация изберете /помощ", 404)
 
 
 # Helper functions
 
 def error_response(message, status_code):
     """Generate a standardized error response."""
-    return jsonify({"error": message}), status_code
+    return jsonify({"message": message}), status_code
 
 
 def handle_disciplines_list(question):
@@ -107,7 +108,7 @@ def handle_disciplines_list(question):
     disciplines_data = load_disciplines(program_url)
     discipline_names = [discipline.disciplineName for discipline in disciplines_data]
     return jsonify({
-        "message": "Дисциплините, които имаше са:",
+        "message": f"Дисциплините, които имате за програма {program_name} са:",
         "items": discipline_names
     })
 
@@ -139,7 +140,7 @@ def handle_lecturer_disciplines(question):
     matching_disciplines = get_disciplines_by_lecturer(lecturer_name)
     if matching_disciplines:
         return jsonify({
-            "message": f"Преподавателя води следните дисциплини:",
+            "message": f"Преподавателят води следните дисциплини:",
             "items": matching_disciplines
         })
 
@@ -212,7 +213,7 @@ def handle_programs_for_specialization(question):
 
     return jsonify(
         {
-            "message": "Вашите прoграми са:",
+            "message": f"Вашите прoграми за специалност {specialization_name} са:",
             "items": program_titles
         }
     )
@@ -222,7 +223,7 @@ def get_programs_for_specialization_by_name(specialization_name):
     for specialization in specializations:
         if specialization_name.lower() in specialization.specialization_name.lower():
             return specialization.programs
-        return []
+    return []
 
 
 def get_program_link_by_program_name(program_name, programs: List[ProgramLinkModel]):
@@ -252,7 +253,7 @@ def get_disciplines_by_lecturer(lecturer_name):
         for variant in discipline.disciplineList:
             if lecturer_name_lower in variant.lecturer.lower():
                 matching_disciplines.add(discipline.disciplineName)
-    return matching_disciplines
+    return list(matching_disciplines)
 
 
 def get_session_type(question):

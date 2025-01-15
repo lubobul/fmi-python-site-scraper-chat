@@ -1,11 +1,19 @@
-
-
-<div class="main-chat-container">
-    <div class="main-chat-history">
-        <h2>{{chatResponse.message}}</h2>
-        @for (program of chatResponse?.items; track program.toLowerCase()){
-            <p>{{program}}</p>
-        }
+<div class="main-container">
+    <div class="chat-container">
+        <div class="main-chat-history">
+            @for (chatEntry of chatHistoryStack; track chatEntry.id) {
+                <div class="chat-message"
+                     [class]="chatEntry.messageType === ChatHistoryMessageType.UserMessage ? 'user-message' : 'bot-message'">
+                    <h3>{{ chatEntry.message }}</h3>
+                    @if (chatEntry.items) {
+                        @for (item of chatEntry?.items; track item.toLowerCase()) {
+                            <p>{{ item }}</p>
+                        }
+                    }
+                </div>
+            }
+        </div>
+        <textarea class="chat-user-input" name="w3review" [(ngModel)]="userChatInput"
+                  (keydown)="onKeydown($event)"></textarea>
     </div>
-    <textarea class="chat-user-input" name="w3review" [(ngModel)]="userChatInput" (keydown)="onKeydown($event)"></textarea>
 </div>

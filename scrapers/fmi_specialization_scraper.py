@@ -18,12 +18,13 @@ def scrape_specializations(url: str) -> List[SpecializationModel]:
         for row in table.find_all('tr')[1:]:  # Skip the header row
             cells = row.find_all('td')
             if cells[0].find('strong'):
-                degree_name = cells[0].get_text().strip()
-                specialization = SpecializationModel(degree_name, [])
+                specialization_name = cells[0].get_text().strip()
+                specialization_name = specialization_name.replace('\xa0', '')
+                specialization = SpecializationModel(specialization_name, [])
                 programs.append(specialization)
 
                 if cells[1].find('a') or cells[2].find('a'):
-                    specialization_link = ProgramLinkModel(degree_name)
+                    specialization_link = ProgramLinkModel(specialization_name)
                     specialization_link.winter_link = cells[1].find('a').get('href') if cells[1].find('a') else None
                     specialization_link.summer_link = cells[2].find('a').get('href') if cells[2].find('a') else None
                     specialization.programs.append(specialization_link)

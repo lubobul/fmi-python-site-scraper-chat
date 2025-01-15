@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {ChatbotApiClientService} from './services/chatbot-api-client.service';
 import {FormsModule} from '@angular/forms';
-import {ChatResponse} from './models/chat.models';
+import {ChatHistoryMessage, ChatHistoryMessageType, ChatResponse} from './models/chat.models';
 
 @Component({
     selector: 'app-root',
@@ -13,12 +13,11 @@ import {ChatResponse} from './models/chat.models';
 })
 export class AppComponent implements OnInit {
 
-    protected chatResponse: ChatResponse = {
-        message: "",
-        items: undefined,
-    };
+    private chatHistoryId = 0;
 
-    protected userChatInput: string = "";
+    protected chatHistoryStack: ChatHistoryMessage[] = [];
+
+    protected userChatInput: string = "какви специалности има?";
     constructor(private apiClientService: ChatbotApiClientService) {
     }
 
@@ -29,12 +28,40 @@ export class AppComponent implements OnInit {
     public onKeydown(event: KeyboardEvent) {
         if (event.key === 'Enter') {
             event.preventDefault(); // Prevents the default action of moving to the next line // Handle the "Enter" key press here console.log('Enter key was pressed.'); } }
-
-            this.apiClientService.getPrograms({
-                question: this.userChatInput,
-            }).subscribe((programModel) => {
-                this.chatResponse = programModel;
-            })
+            this.sendMessage();
         }
     }
+
+    public sendMessage(): void{
+        this.chatHistoryStack.push({
+            messageType: ChatHistoryMessageType.UserMessage,
+            message: this.userChatInput,
+            id: this.chatHistoryId++,
+            isWarning: false,
+        } as ChatHistoryMessage);
+
+        this.apiClientService.getPrograms({
+            question: this.userChatInput,
+        }).subscribe({ next: (chatResponse) => {
+
+            this.chatHistoryStack.push({
+                messageType: ChatHistoryMessageType.BotMessage,
+                message: chatResponse.message,
+                items: chatResponse.items,
+                id: this.chatHistoryId++,
+                isWarning: false,
+            } as ChatHistoryMessage);
+        }, error: (error) =>{
+                this.chatHistoryStack.push({
+                    messageType: ChatHistoryMessageType.BotMessage,
+                    message: error.error.message,
+                    id: this.chatHistoryId++,
+                    isWarning: true,
+                } as ChatHistoryMessage);
+        }});
+
+        this.userChatInput = "";
+    }
+
+    protected readonly ChatHistoryMessageType = ChatHistoryMessageType;
 }
