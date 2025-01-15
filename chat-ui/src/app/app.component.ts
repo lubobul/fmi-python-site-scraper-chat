@@ -1,11 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { ChatbotApiClientService } from './services/chatbot-api-client.service';
-import { FormsModule } from '@angular/forms';
+import {AfterViewChecked, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
+import {ChatbotApiClientService} from './services/chatbot-api-client.service';
+import {FormsModule} from '@angular/forms';
 import {
     ChatHistoryMessage,
     ChatHistoryMessageType,
-    ChatResponse,
 } from './models/chat.models';
 
 @Component({
@@ -15,15 +14,20 @@ import {
     standalone: true,
     styleUrl: './app.component.scss',
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewChecked {
+    @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
+
     private chatHistoryId = 0;
 
     protected chatHistoryStack: ChatHistoryMessage[] = [];
 
     protected userChatInput: string = 'какви специалности има?';
-    constructor(private apiClientService: ChatbotApiClientService) {}
 
-    public ngOnInit(): void {}
+    constructor(private apiClientService: ChatbotApiClientService) {
+    }
+
+    public ngOnInit(): void {
+    }
 
     public onKeydown(event: KeyboardEvent) {
         if (event.key === 'Enter') {
@@ -37,7 +41,7 @@ export class AppComponent implements OnInit {
             return; // Exit the method if the input is empty, undefined, or just spaces
         }
 
-        this.chatHistoryStack.push({
+        this.appendMessageToHistory({
             messageType: ChatHistoryMessageType.UserMessage,
             message: this.userChatInput,
             id: this.chatHistoryId++,
@@ -50,7 +54,7 @@ export class AppComponent implements OnInit {
             })
             .subscribe({
                 next: (chatResponse) => {
-                    this.chatHistoryStack.push({
+                    this.appendMessageToHistory({
                         messageType: ChatHistoryMessageType.BotMessage,
                         message: chatResponse.message,
                         items: chatResponse.items,
@@ -59,7 +63,7 @@ export class AppComponent implements OnInit {
                     } as ChatHistoryMessage);
                 },
                 error: (error) => {
-                    this.chatHistoryStack.push({
+                    this.appendMessageToHistory({
                         messageType: ChatHistoryMessageType.BotMessage,
                         message: error.error.message,
                         id: this.chatHistoryId++,
@@ -71,5 +75,17 @@ export class AppComponent implements OnInit {
         this.userChatInput = '';
     }
 
+    private appendMessageToHistory(historyMessage: ChatHistoryMessage): void{
+        this.chatHistoryStack.push(historyMessage);
+    }
+
+    private scrollToBottom(): void {
+        this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
+    }
+
     protected readonly ChatHistoryMessageType = ChatHistoryMessageType;
+
+    ngAfterViewChecked(): void {
+        this.scrollToBottom();
+    }
 }

@@ -1,6 +1,6 @@
 <div class="main-container">
     <div class="chat-container">
-        <div class="main-chat-history">
+        <div #scrollContainer class="main-chat-history">
             @for (chatEntry of chatHistoryStack; track chatEntry.id) {
             <div
                 class="chat-message"
@@ -24,9 +24,9 @@
                 name="w3review"
                 [(ngModel)]="userChatInput"
                 (keydown)="onKeydown($event)"
-                placeholder="Type your message..."
+                placeholder="Въведете въпрос..."
             ></textarea>
-            <button class="send-button" (click)="sendMessage()">Send</button>
+            <button class="send-button" (click)="sendMessage()">Изпрати</button>
         </div>
     </div>
 </div>
