@@ -44,14 +44,27 @@ def help_info(question):
         with open(file_path, 'r', encoding='utf-8') as file:
             help_content = file.read()
 
-        return jsonify({"message": help_content})
+        # Process the help content: separate into message and items
+        lines = help_content.strip().split('\n')
+
+        # First line is the message
+        message = lines[0]
+
+        # Remaining lines are the items
+        items = [line.strip() for line in lines[1:] if line.strip()]
+
+        # Return the structured data
+        return jsonify({
+            "message": message,
+            "items": items
+        })
+    
     except FileNotFoundError:
         logging.error("help_info.txt file not found.")
         return jsonify({"message": "Help information file not found."}), 404
     except Exception as e:
         logging.error(f"Error reading help_info.txt: {e}")
         return jsonify({"message": "Failed to retrieve help information."}), 500
-
 
 @chatbot_controller_bp.route('/api/chatbot', methods=['POST'])
 def chatbot():
@@ -103,6 +116,8 @@ def handle_disciplines_list(question):
 
     selected_programs_for_specialization = get_programs_for_specialization_by_name(selected_specialization_name)
     program_link = get_program_link_by_program_name(program_name, selected_programs_for_specialization)
+    if not program_link:
+        return error_response("За този курс няма програма.", 404)
 
     program_url = "https://fmi-plovdiv.org/" + program_link.replace("../", "");
     disciplines_data = load_disciplines(program_url)

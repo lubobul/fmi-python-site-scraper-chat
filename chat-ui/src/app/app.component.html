@@ -2,18 +2,31 @@
     <div class="chat-container">
         <div class="main-chat-history">
             @for (chatEntry of chatHistoryStack; track chatEntry.id) {
-                <div class="chat-message"
-                     [class]="chatEntry.messageType === ChatHistoryMessageType.UserMessage ? 'user-message' : 'bot-message'">
-                    <h3>{{ chatEntry.message }}</h3>
-                    @if (chatEntry.items) {
-                        @for (item of chatEntry?.items; track item.toLowerCase()) {
-                            <p>{{ item }}</p>
-                        }
-                    }
-                </div>
+            <div
+                class="chat-message"
+                [class]="
+                    chatEntry.messageType === ChatHistoryMessageType.UserMessage
+                        ? 'user-message'
+                        : 'bot-message'
+                "
+            >
+                <h3>{{ chatEntry.message }}</h3>
+                @if (chatEntry.items) { @for (item of chatEntry?.items; track
+                item.toLowerCase()) {
+                <p>{{ item }}</p>
+                } }
+            </div>
             }
         </div>
-        <textarea class="chat-user-input" name="w3review" [(ngModel)]="userChatInput"
-                  (keydown)="onKeydown($event)"></textarea>
+        <div class="input-container">
+            <textarea
+                class="chat-user-input"
+                name="w3review"
+                [(ngModel)]="userChatInput"
+                (keydown)="onKeydown($event)"
+                placeholder="Type your message..."
+            ></textarea>
+            <button class="send-button" (click)="sendMessage()">Send</button>
+        </div>
     </div>
 </div>

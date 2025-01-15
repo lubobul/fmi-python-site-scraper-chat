@@ -9,6 +9,24 @@
     flex-flow: column;
     min-width: 60rem;
     max-width: 70rem;
+
+    .chat-user-input {
+        flex-grow: 1;
+        padding: 10px;
+        border-radius: 25px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        resize: none;
+        outline: none;
+    }
+    
+    .input-container {
+        display: flex;
+    }
+    
+    .chat-user-input:focus {
+        border-color: #007bff;
+    }
 }
 .main-chat-history{
     .chat-message{
