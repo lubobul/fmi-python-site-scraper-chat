@@ -20,7 +20,7 @@ class ProxyHandler(http.server.SimpleHTTPRequestHandler):
                         var iframe = document.createElement('iframe');
                         iframe.src = 'http://localhost:4200';
                         iframe.width = '650';
-                        iframe.style.height = '40rem';
+                        iframe.style.height = '42rem';
                         contentTd.parentNode.replaceChild(iframe, contentTd);
                     }
                 }

@@ -21,12 +21,18 @@ export class AppComponent implements OnInit, AfterViewChecked {
 
     protected chatHistoryStack: ChatHistoryMessage[] = [];
 
-    protected userChatInput: string = 'какви специалности има?';
+    protected userChatInput: string = '';
 
     constructor(private apiClientService: ChatbotApiClientService) {
     }
 
     public ngOnInit(): void {
+        this.appendMessageToHistory({
+            messageType: ChatHistoryMessageType.BotMessage,
+            message: "Здравейте, аз съм чатбота на ФМИ. За списък от поддържани въпроси /помощ",
+            id: this.chatHistoryId++,
+            isWarning: false,
+        } as ChatHistoryMessage);
     }
 
     public onKeydown(event: KeyboardEvent) {

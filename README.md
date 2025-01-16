@@ -11,13 +11,6 @@ By using a scraper and feeding the data into a chat model.
 
 Everything should be written in Python!
 
-# How to run the project
-
-python3 -m venv fmi-scraper-virtual-env
-source fmi-scraper-virtual-env/bin/activate
-pip3 install requests beautifulsoup4
-python3 main.py
-
 # Chat interaction model
 
 ## Phase 1
@@ -96,25 +89,54 @@ For the MVP we are going to interact with the chat via the terminal
 
 # Chatbot
 
-The **controller.py** serves as the core of the Chatbot. It handles user queries by matching them to a predefined set of questions. The Chatbot uses the scraped data to generate human-readable responses to the HTTP requests from the client.
+
+# Building blocks of the Chatbot
+## REST API
+The rest API is build using **flask**.
+The [chatbot_controller.py](controllers%2Fchatbot_controller.py) serves as the core of the Chatbot. It handles user queries by matching them to a predefined set of questions. The Chatbot uses the scraped data to generate human-readable responses to the HTTP requests from the client.
+
+## Scrapers
+The scrapers [fmi_discipline_scraper.py](scrapers%2Ffmi_discipline_scraper.py), [fmi_specialization_scraper.py](scrapers%2Ffmi_specialization_scraper.py) use **BeautifulSoup**
+to scrape data from the FMI website. It transforms and normalizes the scraped data, in preparation
+for consumption in the REST API
+
+## UI
+The Chatbot UI is written using Angular 19. The chat design is realized using Flex box model.
+
+## Integrating the UI Chat into the FMI Website via HTTP Proxy
+The idea behind this proxy, is to fetch the FMI website and inject the UI application along
+with some javascript that modifies the DOM. This gives us the ability to demonstrate the chat
+as being integrated in the FMI website. This is realized via the injection of a new menu item called "**Чат Бот**"
+When clicked, an injected script by the proxy, is triggered and replaces the page main content
+with an **iframe** hosting the UI Angular application.
 
 # How to run the Chatbot
 
+## Run python virtual environment
 ```
-pip install flask flask_cors requests beautifulsoup4
+python3 -m venv fmi-scraper-virtual-env
+source fmi-scraper-virtual-env/bin/activate
+pip3 install flask flask_cors requests beautifulsoup4
 ```
 
+## Run the python chat REST server
 ```
-python app.py
+python3 app.py
 ```
 
-# Run the Front-end
+## Run the chat Front-end
 
 ```
 cd chat-ui
-npm installng
-ng serve
+npm ci
+npm start
 ```
+
+## Run the FMI website proxy
+python3 fmi_website_proxy.py
+
+## How to test the FMI chatbot
+Using a Chrome browser go to http://localhost:12345
 
 # Postman
 

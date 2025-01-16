@@ -22,15 +22,12 @@ app = Flask(__name__)
 
 selected_specialization_name = None
 
-
 def load_disciplines(url):
     """Load and scrape disciplines from the given website URL."""
     return fmi_discipline_scraper.scrape_disciplines(url)
 
-
 # Initialize the global data store
 disciplines_data = load_disciplines("https://fmi-plovdiv.org/index.jsp?id=4789&ln=1")
-
 
 # @chatbot_controller_bp.route('/api/help', methods=['GET'])
 def help_info(question):
@@ -72,9 +69,6 @@ def chatbot():
     question_data = parse_request(request)
     if not question_data:
         return error_response("Invalid request. Please provide a 'question' field.", 400)
-
-    # if not disciplines_data:
-    #     return error_response("За да продължите с тези въпроси, първо изберете програма, като попитате - какви програми имам?", 400)
 
     question = question_data.lower()
 
