@@ -118,6 +118,7 @@ python3 -m venv fmi-scraper-virtual-env
 source fmi-scraper-virtual-env/bin/activate
 pip3 install flask flask_cors requests beautifulsoup4
 ```
+Then you can simply run the [run.sh](run.sh) which will essentially run all the commands bellow.
 
 ## Run the python chat REST server
 ```
