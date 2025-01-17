@@ -29,7 +29,7 @@ export class AppComponent implements OnInit, AfterViewChecked {
     public ngOnInit(): void {
         this.appendMessageToHistory({
             messageType: ChatHistoryMessageType.BotMessage,
-            message: "Здравейте, аз съм чатбота на ФМИ. За списък от поддържани въпроси /помощ",
+            message: "Здравейте, аз съм чат-бота на ФМИ. За списък от поддържани въпроси въведете /помощ",
             id: this.chatHistoryId++,
             isWarning: false,
         } as ChatHistoryMessage);
